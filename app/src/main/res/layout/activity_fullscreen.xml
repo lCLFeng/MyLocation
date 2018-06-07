@@ -1,0 +1,211 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="#ffffff"
+    tools:context="com.example.loong.mylocation.FullscreenActivity">
+    <!--android:fitsSystemWindows="true"-->
+    <!--android:clipToPadding="true"-->
+    <!-- The primary full-screen view. This can be replaced with whatever view
+         is needed to present your content, e.g. VideoView, SurfaceView,
+         TextureView, etc. -->
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <TextView
+        android:layout_width = "wrap_content"
+        android:layout_height = "wrap_content"
+        android:text = " "
+        android:textSize = "40sp"
+        android:layout_centerHorizontal = "true"
+        android:layout_marginTop = "58sp"
+        android:textStyle = "bold"
+        android:textColor = "#212121"
+        android:gravity = "center"
+        android:id = "@+id/altitudeNum"/>
+    <TextView
+        android:layout_width = "wrap_content"
+        android:layout_height = "wrap_content"
+        android:text = " "
+        android:textSize = "40sp"
+        android:layout_centerHorizontal = "true"
+        android:layout_marginTop = "35sp"
+        android:textStyle = "bold"
+        android:textColor = "#191919"
+        android:gravity = "center"
+        android:id = "@+id/GpsSta"/>
+    <ImageView
+        android:layout_width = "11.7dp"
+        android:layout_height = "9.9dp"
+        android:gravity = "center"
+        android:src = "@drawable/altitude"
+        android:layout_centerHorizontal = "true"
+        android:layout_below = "@id/altitudeNum"
+        android:id = "@+id/altitudeDel"
+        />
+    <TextView
+        android:layout_width = "wrap_content"
+        android:layout_height = "wrap_content"
+        android:gravity = "center"
+        android:text = "当前海拔"
+        android:layout_centerHorizontal = "true"
+        android:paddingTop = "0sp"
+        android:layout_below = "@id/altitudeDel"
+        android:id = "@+id/altitude"/>
+    <ImageView
+        android:layout_width="260dp"
+        android:layout_height="260dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop = "30sp"
+        android:src="@drawable/compass"
+        android:text = "@string/title_compass"
+        android:textColor = "#000000"
+        android:layout_below = "@id/altitude"
+        android:id="@+id/imageView"
+        />
+
+    <ImageView
+        android:layout_width="260dp"
+        android:layout_height="260dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop = "30sp"
+        android:src="@drawable/compassl"
+        android:textColor = "#000000"
+        android:layout_below = "@id/altitude"
+        android:id="@+id/imageViewL"
+        />
+
+    <TextView
+        android:layout_width = "wrap_content"
+        android:layout_height = "wrap_content"
+        android:layout_centerHorizontal = "true"
+        android:layout_marginTop = "5sp"
+        android:text = "   "
+        android:layout_below = "@id/imageView"
+        android:id = "@+id/textViewKongBai"/>
+    <TextView
+        android:layout_width = "wrap_content"
+        android:layout_height = "wrap_content"
+        android:layout_marginRight = "10sp"
+        android:textSize = "16sp"
+        android:layout_marginTop = "35sp"
+        android:layout_below = "@id/imageView"
+        android:layout_toLeftOf = "@id/textViewKongBai"
+        android:id = "@+id/textViewJingDu"/>
+    <TextView
+        android:layout_width = "wrap_content"
+        android:layout_height = "wrap_content"
+        android:layout_toRightOf = "@id/textViewKongBai"
+        android:layout_marginTop = "35sp"
+        android:layout_below = "@id/imageView"
+        android:layout_marginLeft = "10sp"
+        android:textSize = "16sp"
+        android:id = "@+id/textViewWeiDu"/>
+    <TextView
+        android:layout_width = "wrap_content"
+        android:layout_height = "wrap_content"
+        android:layout_centerHorizontal = "true"
+        android:text = "   "
+        android:id = "@+id/textViewKongBai2"/>
+    <TextView
+        android:layout_width = "wrap_content"
+        android:layout_height = "wrap_content"
+        android:layout_centerHorizontal="true"
+        android:gravity = "center"
+        android:layout_below = "@id/textViewWeiDu"
+        android:layout_toLeftOf = "@id/textViewKongBai2"
+        android:layout_marginRight = "10sp"
+        android:textSize = "24sp"
+        android:textStyle = "bold"
+        android:cursorVisible = "false"
+        android:textColor = "#212121"
+        android:focusable="false"
+        android:id = "@+id/editTextJingDu" />
+    <TextView
+        android:layout_width = "wrap_content"
+        android:layout_height = "wrap_content"
+        android:layout_centerHorizontal="true"
+        android:gravity = "center"
+        android:layout_below = "@id/textViewWeiDu"
+        android:layout_toRightOf = "@id/textViewKongBai2"
+        android:layout_marginLeft = "10sp"
+        android:textSize = "24sp"
+        android:textStyle = "bold"
+        android:textColor = "#212121"
+        android:cursorVisible = "false"
+        android:focusable="false"
+        android:id = "@+id/editTextWeiDu" />
+    <EditText
+        android:layout_width = "wrap_content"
+        android:layout_height = "wrap_content"
+        android:id = "@+id/hengXian"
+        android:layout_below = "@id/textViewWeiDu"
+        android:layout_centerHorizontal="true"
+        android:text = "                                                                 "
+        android:focusable="false"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below = "@id/hengXian"
+        android:layout_centerHorizontal="true"
+        android:text = "位置"
+        android:id = "@+id/myLocationText"/>
+
+
+    </RelativeLayout>
+    <TextView
+        android:id="@+id/fullscreen_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity = "center"
+        android:layout_gravity = "bottom"
+        android:keepScreenOn="true"
+        android:text="@string/dummy_content"
+        android:textColor="#ecf4f4f4"
+        android:textSize="50sp"
+        android:textStyle="bold" />
+    <!-- This FrameLayout insets its children based on system windows using
+         android:fitsSystemWindows. -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
+        >
+
+        <LinearLayout
+            android:id="@+id/fullscreen_content_controls"
+            style="?metaButtonBarStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:background="@color/black_overlay"
+            android:orientation="horizontal"
+            tools:ignore="UselessParent">
+        </LinearLayout>
+
+    </FrameLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:text = ""
+        android:textColor = "#5a000000"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentTop = "true"
+        android:layout_marginTop = "1sp"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id = "@+id/otherInfo"
+        android:text = ""
+        android:textColor = "#5a000000"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentTop = "true"
+        android:layout_marginTop = "1sp"
+        />
+</RelativeLayout>

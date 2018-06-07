@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">经纬海拔</string>
+
+    <string name="dummy_button">遇到问题？</string>
+    <string name="dummy_content">\n\n\n\n\n\n  </string>
+
+    <string name="title_activity_question">关于</string>
+    <string name="title_compass">指南针</string>
+
+    <string name="title_activity_paycode">activity_paycode</string>
+</resources>

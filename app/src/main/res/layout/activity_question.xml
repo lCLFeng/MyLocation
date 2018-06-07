@@ -1,0 +1,74 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="#ffffff"
+    tools:context="com.example.loong.mylocation.QuestionActivity">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft = "10sp"
+            android:layout_marginTop = "10sp"
+            android:text = "使用说明"
+            android:textSize = "18sp"
+            android:textStyle = "bold"
+            android:id = "@+id/shuoming"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft = "10sp"
+            android:layout_marginTop = "5sp"
+            android:lineSpacingMultiplier = "1.25"
+            android:layout_marginRight = "10sp"
+            android:text = "1• 该APP无广告，供个人免费使用，不收集用户信息。\n2• 基于GPS传感器，在空旷的地方使用效果更佳。若在室内将手机探到窗外搜索卫星请握紧手机以防跌落砸伤他人。\n3• 可在无网络状态下使用，言外之意是不耗流量0.0\n4• 指南针功能可能会受电磁干扰，据说8字形摇晃手机可校准指南针。\n5• 所有获取的数据及其准确性，仅供参考。\n6• 不同终端体验可能存在差异，尤其是视觉体验。功能体验一致。"
+            android:textSize = "12sp"
+            android:layout_below = "@id/shuoming"
+            android:id = "@+id/shuomingdetail"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft = "10sp"
+            android:layout_marginTop = "10sp"
+            android:text = "多说两句"
+            android:textSize = "18sp"
+            android:textStyle = "bold"
+            android:layout_below = "@id/shuomingdetail"
+            android:id = "@+id/about"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft = "10sp"
+            android:layout_marginRight = "10sp"
+            android:layout_marginTop = "5sp"
+            android:lineSpacingMultiplier = "1.25"
+            android:text = "1• 该APP为学生党兴趣学习而开发，欢迎指出BUG。\n2• 如有问题请致信: lclfeng@qq.com。互相交流学习。\n3• 还是要感谢斌哥提出一些傻不拉几的[用户体验]需求。\n4• 如果用着还行，请我喝杯奶茶啊Hhhh..."
+            android:autoLink="all"
+            android:textSize = "12sp"
+            android:layout_below = "@id/about"
+            android:id = "@+id/aboutdetail"
+            />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src = "@drawable/pay"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="2dp"
+            android:layout_below="@+id/aboutdetail"
+            android:layout_alignParentStart="true"
+            android:id = "@+id/pay"/>
+
+
+    </RelativeLayout>
+
+</RelativeLayout>
