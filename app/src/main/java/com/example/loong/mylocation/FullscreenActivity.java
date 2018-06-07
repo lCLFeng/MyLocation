@@ -440,7 +440,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
                 if (places != null && places.size() > 0) {
                     // placename=((Address)places.get(0)).getLocality();
-                    //一下的信息将会具体到某条街
+                    // 一下的信息将会具体到某条街
                     //其中getAddressLine(0)表示国家，getAddressLine(1)表示精确到某个区，getAddressLine(2)表示精确到具体的街+ System.getProperty("line.separator")
                     placename = ((Address) places.get(0)).getAddressLine(0) + " "
                             + ((Address) places.get(0)).getAddressLine(1) + " "
