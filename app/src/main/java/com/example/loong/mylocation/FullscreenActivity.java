@@ -148,23 +148,23 @@ public class FullscreenActivity extends AppCompatActivity {
 //        }
         setContentView(R.layout.activity_fullscreen);
 
-        textViewJingDu = (TextView)findViewById(R.id.textViewJingDu);
-        GpsSta = (TextView)findViewById(R.id.GpsSta);
-        textViewWeiDu = (TextView)findViewById(R.id.textViewWeiDu);
-        editTextJingDu = (TextView)findViewById(R.id.editTextJingDu);
-        editTextWeiDu = (TextView)findViewById(R.id.editTextWeiDu);
-        textViewAltitude = (TextView)findViewById(R.id.altitudeNum);
-        textViewOtherInfo = (TextView)findViewById(R.id.otherInfo);
-        imageView = (ImageView)findViewById(R.id.imageView);
+        textViewJingDu = (TextView) findViewById(R.id.textViewJingDu);
+        GpsSta = (TextView) findViewById(R.id.GpsSta);
+        textViewWeiDu = (TextView) findViewById(R.id.textViewWeiDu);
+        editTextJingDu = (TextView) findViewById(R.id.editTextJingDu);
+        editTextWeiDu = (TextView) findViewById(R.id.editTextWeiDu);
+        textViewAltitude = (TextView) findViewById(R.id.altitudeNum);
+        textViewOtherInfo = (TextView) findViewById(R.id.otherInfo);
+        imageView = (ImageView) findViewById(R.id.imageView);
         imageView.setKeepScreenOn(true);//屏幕高亮
-        imageViewL = (ImageView)findViewById(R.id.imageViewL);
+        imageViewL = (ImageView) findViewById(R.id.imageViewL);
         imageViewL.setKeepScreenOn(true);//屏幕高亮
-        sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (!lm.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             //Toast.makeText(this, "请开启GPS功能", Toast.LENGTH_LONG);
-            Toast toast=Toast.makeText(this,"请开启GPS功能", Toast.LENGTH_SHORT);
-            showMyToast(toast,2*1000);//次数和每次的时间
+            Toast toast = Toast.makeText(this, "请开启GPS功能", Toast.LENGTH_SHORT);
+            showMyToast(toast, 2 * 1000);//次数和每次的时间
         }
         String bestProvider = lm.getBestProvider(getCriteria(), true);
         Location location = lm.getLastKnownLocation(bestProvider);
@@ -193,15 +193,15 @@ public class FullscreenActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         //使用菜单填充器获取menu下的菜单资源文件
-        getMenuInflater().inflate(R.menu.menu,menu);
+        getMenuInflater().inflate(R.menu.menu, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.action_settings:
-                Intent intent = new Intent(FullscreenActivity.this,QuestionActivity.class);
+                Intent intent = new Intent(FullscreenActivity.this, QuestionActivity.class);
                 startActivity(intent);
                 break;
         }
@@ -210,26 +210,27 @@ public class FullscreenActivity extends AppCompatActivity {
 
     //toast显示时长函数
     public void showMyToast(final Toast toast, final int cnt) {
-        final Timer timer =new Timer();
+        final Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 toast.show();
             }
-        },0,3000);
+        }, 0, 3000);
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
                 toast.cancel();
                 timer.cancel();
             }
-        }, cnt );
+        }, cnt);
     }
+
     @Override
     protected void onResume() {
 
         Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
-        sensorManager.registerListener(sensorListener,sensor,SensorManager.SENSOR_DELAY_FASTEST);
+        sensorManager.registerListener(sensorListener, sensor, SensorManager.SENSOR_DELAY_FASTEST);
         super.onResume();
     }
 
@@ -248,24 +249,24 @@ public class FullscreenActivity extends AppCompatActivity {
         public void onSensorChanged(SensorEvent event) {
             /**
              *  values[0]: x-axis 方向加速度
-                values[1]: y-axis 方向加速度
-                values[2]: z-axis 方向加速度
+             values[1]: y-axis 方向加速度
+             values[2]: z-axis 方向加速度
              */
             float degree = event.values[0];// 存放了方向值
             /**动画效果*/
 
             RotateAnimation animation = new RotateAnimation(predegree, -degree,
-                    Animation.RELATIVE_TO_SELF,0.5f,Animation.RELATIVE_TO_SELF,0.5f);
+                    Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
             animation.setDuration(100);
             imageView.startAnimation(animation);
             animation.setFillAfter(true);
             RotateAnimation animationL = new RotateAnimation(predegreeL, -degree,
-                    Animation.RELATIVE_TO_SELF,0.5f,Animation.RELATIVE_TO_SELF,0.5f);
+                    Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
             animationL.setDuration(100);
             imageViewL.startAnimation(animationL);
             animationL.setFillAfter(true);
-            predegree=-degree;
-            predegreeL=-degree;
+            predegree = -degree;
+            predegreeL = -degree;
 
             /**
              float x=event.values[SensorManager.DATA_X];
@@ -318,7 +319,7 @@ public class FullscreenActivity extends AppCompatActivity {
     private void show() {
         // Show the system bar
         mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                |View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
         mVisible = true;
 
         // Schedule a runnable to display UI elements after a delay
@@ -336,16 +337,13 @@ public class FullscreenActivity extends AppCompatActivity {
     }
 
 
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(lm!=null) {
+        if (lm != null) {
             lm.removeUpdates(locationListener);
         }
     }
-
-
 
 
     private LocationListener locationListener = new LocationListener() {
@@ -414,97 +412,107 @@ public class FullscreenActivity extends AppCompatActivity {
         }
     };
 
+    @SuppressLint({"SetTextI18n", "DefaultLocale"})
     private void updateView(Location location) {
         String latLongString;
         String placename = "";
         TextView myLocationText = (TextView) findViewById(R.id.myLocationText);
-            if(location!=null){
+        if (location != null) {
 
-                double lat = location.getLatitude();
-                double lng = location.getLongitude();
+            double lat = location.getLatitude();
+            double lng = location.getLongitude();
 
-                Geocoder geocoder = new Geocoder(this);
+            Geocoder geocoder = new Geocoder(this);
 //                        Geocoder geocoder = new Geocoder(this, Locale.CHINA);
-                List places = null;
+            List places = null;
 
-                try {
+            try {
 //                                Thread.sleep(2000);
-                    places = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 5);
+                places = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 5);
 //                                Thread.sleep(2000);
-                    //Toast.makeText(this, places.size() + "", Toast.LENGTH_LONG).show();
-                    System.out.println(places.size() + "");
-                } catch (Exception e) {
-                    e.printStackTrace();
+                //Toast.makeText(this, places.size() + "", Toast.LENGTH_LONG).show();
+                System.out.println(places.size() + "");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+            if (places != null && places.size() > 0) {
+                // placename=((Address)places.get(0)).getLocality();
+                // 以下的信息将会具体到某条街
+                //其中getAddressLine(0)表示国家，getAddressLine(1)表示精确到某个区，getAddressLine(2)表示精确到具体的街+ System.getProperty("line.separator")
+                StringBuilder stringBuilder = new StringBuilder();
+                /*
+                placename = ((Address) places.get(0)).getAddressLine(0) + " "
+                        + ((Address) places.get(0)).getAddressLine(1) + " "
+                        + ((Address) places.get(0)).getAddressLine(2);
+                        */
+                for (int i = 0; ((Address) places.get(0)).getAddressLine(i) != null; i++) {
+                    stringBuilder.append(((Address) places.get(0)).getAddressLine(i));
+                    stringBuilder.append(" ");
                 }
-
-
-                if (places != null && places.size() > 0) {
-                    // placename=((Address)places.get(0)).getLocality();
-                    // 一下的信息将会具体到某条街
-                    //其中getAddressLine(0)表示国家，getAddressLine(1)表示精确到某个区，getAddressLine(2)表示精确到具体的街+ System.getProperty("line.separator")
-                    placename = ((Address) places.get(0)).getAddressLine(0) + " "
-                            + ((Address) places.get(0)).getAddressLine(1) + " "
-                            + ((Address) places.get(0)).getAddressLine(2);
-
-
-                }
-
-                latLongString = "纬度:" + lat + "\n经度:" + lng;
-                //http://www.eoeandroid.com/thread-56691-1-1.html
-                myLocationText.setText(placename);
-                if(location.getLongitude()>0){
-                    textViewJingDu.setText("东经");
-                }else{
-                    textViewJingDu.setText("西经");
-                }if(location.getLatitude()>0){
-                    textViewWeiDu.setText("北纬");
-                }else{
-                    textViewWeiDu.setText("南纬");
-                }
-                GpsSta.setText(" ");
-                editTextJingDu.setText(String.valueOf(convertToSexagesimal(location.getLongitude())));
-                editTextWeiDu.setText(String.valueOf(convertToSexagesimal(location.getLatitude())));
-                textViewAltitude.setText(String .valueOf(location.getAltitude())+"米");
-                textViewOtherInfo.setText("海拔精度:"+String.valueOf(location.getAccuracy())+"米 | "
-                +"当前速度:"+((int)((location.getSpeed()*100)))/100.0+"m/s | "+"卫星数量:"+
-                        String.valueOf(String.valueOf(countSat)+"颗"));
+                placename = String.valueOf(stringBuilder);
 
             }
-        else{
-                if(!lm.isProviderEnabled(LocationManager.GPS_PROVIDER)){
-                    GpsSta.setText("请开启GPS功能...");
-                    GpsSta.setTextSize(20);
-                    GpsSta.setTextColor(Color.rgb(255, 0, 0));
-                }else{
-                    GpsSta.setText("正在获取位置信息...");
-                    GpsSta.setTextSize(20);
-                    GpsSta.setTextColor(Color.rgb(0, 0, 255));
-                }
-                textViewAltitude.setText(" ");
-                editTextJingDu.setText("000°00′00″");
-                editTextWeiDu.setText("000°00′00″");
-                textViewJingDu.setText("经度");
-                textViewWeiDu.setText("纬度");
-                myLocationText.setText("地址");
-                textViewOtherInfo.setText(" ");
+
+            latLongString = "纬度:" + lat + "\n经度:" + lng;
+            //http://www.eoeandroid.com/thread-56691-1-1.html
+            myLocationText.setText(placename);
+            if (location.getLongitude() > 0) {
+                textViewJingDu.setText("东经");
+            } else {
+                textViewJingDu.setText("西经");
+            }
+            if (location.getLatitude() > 0) {
+                textViewWeiDu.setText("北纬");
+            } else {
+                textViewWeiDu.setText("南纬");
+            }
+            GpsSta.setText(" ");
+            editTextJingDu.setText(String.valueOf(convertToSexagesimal(location.getLongitude())));
+            editTextWeiDu.setText(String.valueOf(convertToSexagesimal(location.getLatitude())));
+            textViewAltitude.setText(String.format("%.1f", location.getAltitude()) + "米");
+            textViewOtherInfo.setText("海拔精度:" + String.format("%.1f", location.getAccuracy()) + "米 | "
+                    + "当前速度:" + ((int) ((location.getSpeed() * 100))) / 100.0 + "m/s | " + "卫星数量:" +
+                    String.valueOf(String.valueOf(countSat) + "颗"));
+
+        } else {
+            if (!lm.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                GpsSta.setText("请开启GPS功能...");
+                GpsSta.setTextSize(20);
+                GpsSta.setTextColor(Color.rgb(255, 0, 0));
+            } else {
+                GpsSta.setText("正在获取位置信息...");
+                GpsSta.setTextSize(20);
+                GpsSta.setTextColor(Color.rgb(0, 0, 255));
+            }
+            textViewAltitude.setText(" ");
+            editTextJingDu.setText(" ");
+            editTextWeiDu.setText(" ");
+            textViewJingDu.setText(" ");
+            textViewWeiDu.setText(" ");
+            myLocationText.setText(" ");
+            textViewOtherInfo.setText(" ");
         }
     }
-    public String convertToSexagesimal(double num){
 
-        int du1=(int)Math.floor(Math.abs(num));    //获取整数部分
-        double temp=getdPoint(Math.abs(num))*60;
-        int fen1=(int)Math.floor(temp); //获取整数部分
-        int miao1=(int)(getdPoint(temp)*60);
-        DecimalFormat df1=new DecimalFormat("000");
+    public String convertToSexagesimal(double num) {
+
+        int du1 = (int) Math.floor(Math.abs(num));    //获取整数部分
+        double temp = getdPoint(Math.abs(num)) * 60;
+        int fen1 = (int) Math.floor(temp); //获取整数部分
+        int miao1 = (int) (getdPoint(temp) * 60);
+        DecimalFormat df1 = new DecimalFormat("000");
         String du = df1.format(du1);
-        DecimalFormat df2=new DecimalFormat("00");
+        DecimalFormat df2 = new DecimalFormat("00");
         String fen = df2.format(fen1);
         String miao = df2.format(miao1);
-        return du+"°"+fen+"′"+miao+"″";
+        return du + "°" + fen + "′" + miao + "″";
 
     }
+
     //获取小数部分
-    public double getdPoint(double num){
+    public double getdPoint(double num) {
         double d = num;
         int fInt = (int) d;
         BigDecimal b1 = new BigDecimal(Double.toString(d));
@@ -514,7 +522,7 @@ public class FullscreenActivity extends AppCompatActivity {
     }
     //度分秒的计算http://www.apkbus.com/android-44986-1-1.html
 
-    private Criteria getCriteria(){
+    private Criteria getCriteria() {
         Criteria criteria = new Criteria();
         criteria.setAccuracy(Criteria.ACCURACY_FINE);//定位精度
         criteria.setSpeedRequired(true);//是否需要速度
