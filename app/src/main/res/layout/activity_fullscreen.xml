@@ -152,6 +152,7 @@
         android:layout_height="wrap_content"
         android:layout_below = "@id/hengXian"
         android:layout_centerHorizontal="true"
+        android:gravity="center"
         android:text = "位置"
         android:id = "@+id/myLocationText"/>
 

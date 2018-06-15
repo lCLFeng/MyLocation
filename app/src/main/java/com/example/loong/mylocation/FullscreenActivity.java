@@ -32,10 +32,20 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -128,7 +138,10 @@ public class FullscreenActivity extends AppCompatActivity {
     private TextView GpsSta;
     private LocationManager lm;
     private static final String TAG = "GpsActivity";
+    private TextView myLocationText;
     public int countSat;
+    private String placename = null;
+    private Handler handler=null;
     //要申请的权限
     //private String[] permissions = {android.Manifest.permission.ACCESS_FINE_LOCATION};
     //private AlertDialog perDialog;  //permissions Dialog
@@ -146,9 +159,12 @@ public class FullscreenActivity extends AppCompatActivity {
 //                showDialogTipUserRequestPermission();
 //            }
 //        }
-        setContentView(R.layout.activity_fullscreen);
 
+        setContentView(R.layout.activity_fullscreen);
+        //创建属于主线程的handler
+        handler=new Handler();
         textViewJingDu = (TextView) findViewById(R.id.textViewJingDu);
+        myLocationText = (TextView) findViewById(R.id.myLocationText);
         GpsSta = (TextView) findViewById(R.id.GpsSta);
         textViewWeiDu = (TextView) findViewById(R.id.textViewWeiDu);
         editTextJingDu = (TextView) findViewById(R.id.editTextJingDu);
@@ -411,53 +427,120 @@ public class FullscreenActivity extends AppCompatActivity {
             }
         }
     };
+    // 构建Runnable对象，在runnable中更新界面
+    Runnable   runnableUi=new  Runnable(){
+        @Override
+        public void run() {
+            //更新界面
+            myLocationText.setText(placename);
+        }
 
+    };
     @SuppressLint({"SetTextI18n", "DefaultLocale"})
-    private void updateView(Location location) {
-        String latLongString;
-        String placename = "";
-        TextView myLocationText = (TextView) findViewById(R.id.myLocationText);
+    private void updateView(final Location location) {
         if (location != null) {
 
             double lat = location.getLatitude();
             double lng = location.getLongitude();
 
-            Geocoder geocoder = new Geocoder(this);
-//                        Geocoder geocoder = new Geocoder(this, Locale.CHINA);
+            //Geocoder geocoder = new Geocoder(this);
+
             List places = null;
+            if (Geocoder.isPresent()) {
+                Log.i(TAG, "服务存在" + Geocoder.isPresent());
+                Geocoder geocoder = new Geocoder(this, Locale.CHINA);
 
-            try {
+                try {
+                    //Thread.sleep(2000);
+                    places = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 2);
 //                                Thread.sleep(2000);
-                places = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 5);
-//                                Thread.sleep(2000);
-                //Toast.makeText(this, places.size() + "", Toast.LENGTH_LONG).show();
-                System.out.println(places.size() + "");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-
-            if (places != null && places.size() > 0) {
-                // placename=((Address)places.get(0)).getLocality();
-                // 以下的信息将会具体到某条街
-                //其中getAddressLine(0)表示国家，getAddressLine(1)表示精确到某个区，getAddressLine(2)表示精确到具体的街+ System.getProperty("line.separator")
-                StringBuilder stringBuilder = new StringBuilder();
+                    Log.i(TAG, "获取的地址" + places.toString());
+                    //Toast.makeText(this, "服务是否存在" + places.toString(), Toast.LENGTH_LONG).show();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                if (places != null && places.size() > 0) {
+                    // placename=((Address)places.get(0)).getLocality();
+                    // 以下的信息将会具体到某条街
+                    //其中getAddressLine(0)表示国家，getAddressLine(1)表示精确到某个区，getAddressLine(2)表示精确到具体的街+ System.getProperty("line.separator")
+                    StringBuilder stringBuilder = new StringBuilder();
                 /*
                 placename = ((Address) places.get(0)).getAddressLine(0) + " "
                         + ((Address) places.get(0)).getAddressLine(1) + " "
                         + ((Address) places.get(0)).getAddressLine(2);
                         */
-                for (int i = 0; ((Address) places.get(0)).getAddressLine(i) != null; i++) {
-                    stringBuilder.append(((Address) places.get(0)).getAddressLine(i));
-                    stringBuilder.append(" ");
+                    for (int i = 0; ((Address) places.get(0)).getAddressLine(i) != null; i++) {
+                        stringBuilder.append(((Address) places.get(0)).getAddressLine(i));
+                        stringBuilder.append(" ");
+                    }
+                    placename = String.valueOf(stringBuilder);
+                    myLocationText.setText(placename);
+
                 }
-                placename = String.valueOf(stringBuilder);
+            } else {
+                final String urlOri = "http://restapi.amap.com/v3/geocode/regeo?output=json&location=";
+                final String latlng = location.getLongitude()+","+location.getLatitude()+"&";
+                final String key = "key=e9399f74899ed9b1bba884bfe685cb24"+"&";
+                final String radius = "radius=200";
+
+                Log.i(TAG,urlOri+latlng+key+radius);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        BufferedReader br = null;
+                        try {
+                            URL url = new URL(urlOri+latlng+key+radius);
+                            HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+                            httpURLConnection.setRequestProperty("accept", "*/*");
+                            httpURLConnection.setDoInput(true);
+                            httpURLConnection.setDoOutput(true);
+                            httpURLConnection.connect();
+                            int stat = httpURLConnection.getResponseCode();
+                            Log.i("Tag", "CODE:" + stat);
+                            String msg;
+                            if (stat == 200) {
+                                br = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
+                                msg = br.readLine();
+                                JSONObject jsonObject = new JSONObject(msg);
+                                JSONObject jsonObjectAll = jsonObject.getJSONObject("regeocode");
+                                //省份
+                                JSONObject jsonObjectProvince = jsonObjectAll.getJSONObject("addressComponent");
+                                Log.i(TAG,jsonObjectProvince.getString("province"));
+                                String province = jsonObjectProvince.getString("province");
+                                //街道名
+                                JSONObject jsonObjectTownship = jsonObjectAll.getJSONObject("addressComponent");
+                                String township = jsonObjectTownship.getString("township");
+                                //删除省份和记街道
+                                String stringPlacename = jsonObjectAll.getString("formatted_address");
+                                stringPlacename = stringPlacename.replace(province,"");
+                                stringPlacename = stringPlacename.replace(township,"");
+                                Log.i(TAG,stringPlacename);
+                                placename = stringPlacename;
+                                //不允许在子线程中更新view
+                                handler.post(runnableUi);
+                            } else {
+                                msg = "请求失败";
+                            }
+                        } catch (MalformedURLException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        } finally {
+                            if (br != null) {
+                                try {
+                                    br.close();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    }
+                }).start();
 
             }
-
-            latLongString = "纬度:" + lat + "\n经度:" + lng;
             //http://www.eoeandroid.com/thread-56691-1-1.html
-            myLocationText.setText(placename);
             if (location.getLongitude() > 0) {
                 textViewJingDu.setText("东经");
             } else {
@@ -471,8 +554,11 @@ public class FullscreenActivity extends AppCompatActivity {
             GpsSta.setText(" ");
             editTextJingDu.setText(String.valueOf(convertToSexagesimal(location.getLongitude())));
             editTextWeiDu.setText(String.valueOf(convertToSexagesimal(location.getLatitude())));
-            textViewAltitude.setText(String.format("%.1f", location.getAltitude()) + "米");
-            textViewOtherInfo.setText("海拔精度:" + String.format("%.1f", location.getAccuracy()) + "米 | "
+            //location.getAltitude()
+            double altitude = location.getAltitude();
+            textViewAltitude.setText((int) altitude + "米");
+            double accuracy = location.getAccuracy();
+            textViewOtherInfo.setText("海拔精度:" +  (int)accuracy + "米 | "
                     + "当前速度:" + ((int) ((location.getSpeed() * 100))) / 100.0 + "m/s | " + "卫星数量:" +
                     String.valueOf(String.valueOf(countSat) + "颗"));
 

@@ -2,10 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.loong.mylocation"
     android:versionCode="5"
-    android:versionName="1.1.8"
-    >
+    android:versionName="1.1.8">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -31,6 +31,13 @@
         <activity
             android:name=".PaycodeActivity"
             android:theme="@style/MyDialogStyle" />
+
+        <service android:name="com.amap.api.location.APSService" />
+        <meta-data
+            android:name="com.amap.api.v2.apikey"
+            android:value="key">
+            a2596c1fdd88e7fa296230a08ffbd7cf
+        </meta-data>
     </application>
 
 </manifest>
