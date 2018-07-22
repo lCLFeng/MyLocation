@@ -140,8 +140,11 @@ public class FullscreenActivity extends AppCompatActivity {
     private static final String TAG = "GpsActivity";
     private TextView myLocationText;
     public int countSat;
-    private String placename = null;
-    private Handler handler=null;
+    private String placename = " ";
+    private Handler handler = null;
+
+    private double latOld;//判断经纬度第4位相同则不向地图服务商提交请求，节省流量
+    private double lngOld;
     //要申请的权限
     //private String[] permissions = {android.Manifest.permission.ACCESS_FINE_LOCATION};
     //private AlertDialog perDialog;  //permissions Dialog
@@ -162,7 +165,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_fullscreen);
         //创建属于主线程的handler
-        handler=new Handler();
+        handler = new Handler();
         textViewJingDu = (TextView) findViewById(R.id.textViewJingDu);
         myLocationText = (TextView) findViewById(R.id.myLocationText);
         GpsSta = (TextView) findViewById(R.id.GpsSta);
@@ -177,6 +180,8 @@ public class FullscreenActivity extends AppCompatActivity {
         imageViewL.setKeepScreenOn(true);//屏幕高亮
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        latOld = 100.0;//纬度边界90 -90
+        lngOld = 200.0;//经度边界180 -180
         if (!lm.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             //Toast.makeText(this, "请开启GPS功能", Toast.LENGTH_LONG);
             Toast toast = Toast.makeText(this, "请开启GPS功能", Toast.LENGTH_SHORT);
@@ -186,7 +191,7 @@ public class FullscreenActivity extends AppCompatActivity {
         Location location = lm.getLastKnownLocation(bestProvider);
         updateView(location);
         lm.addGpsStatusListener(listener);
-        lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, locationListener);
+        lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 1, locationListener);
 
         mVisible = true;
         mControlsView = findViewById(R.id.fullscreen_content_controls);
@@ -428,7 +433,7 @@ public class FullscreenActivity extends AppCompatActivity {
         }
     };
     // 构建Runnable对象，在runnable中更新界面
-    Runnable   runnableUi=new  Runnable(){
+    Runnable runnableUi = new Runnable() {
         @Override
         public void run() {
             //更新界面
@@ -436,64 +441,98 @@ public class FullscreenActivity extends AppCompatActivity {
         }
 
     };
+
+
     @SuppressLint({"SetTextI18n", "DefaultLocale"})
     private void updateView(final Location location) {
         if (location != null) {
 
             double lat = location.getLatitude();
             double lng = location.getLongitude();
-
+            Boolean lngSub; //若前后两次的经纬度相等则不向地图提供商发送请求，这里将相等设置为true
+            Boolean latSub; //若不相等则发送请求，此时为false
+            Log.i(TAG, "location" + lat);
+            Log.i(TAG, "location" + lng);
+            if ((latOld != 100.0) && (lngOld != 200.0)) {
+                //判断纬度第4位是否相等
+                String latStr = String.valueOf(lat);
+                String latOldStr = String.valueOf(latOld);
+                Log.i(TAG, "latSub语句前前：" + lat + " " + latOld);
+                latSub = latStr.charAt(latStr.indexOf(".") + 4) == latOldStr.charAt(latOldStr.indexOf(".") + 4);
+                //判断经度第4位是否相等
+                String lngStr = String.valueOf(lng);
+                String lngOldStr = String.valueOf(lngOld);
+                Log.i(TAG, "lngSub语句前前：" + lng + " " + lngOld);
+                lngSub = lngStr.charAt(lngStr.indexOf(".") + 4) == lngOldStr.charAt(lngOldStr.indexOf(".") + 4);
+                Log.i(TAG, "经纬小数点后第4位：  " + lngStr.charAt(lngStr.indexOf(".") + 4) + " " + latStr.charAt(latStr.indexOf(".") + 4) + "  " + lngStr);
+                Log.i(TAG, "经纬度小数点后第4位-上一次：" + lngOldStr.charAt(lngOldStr.indexOf(".") + 4) + " " + latOldStr.charAt(latOldStr.indexOf(".") + 4) + "  " + lngOldStr);
+                latOld = lat;
+                lngOld = lng;
+            } else {
+                latOld = lat;
+                lngOld = lng;
+                lngSub = false;
+                latSub = false;
+            }
             //Geocoder geocoder = new Geocoder(this);
-
             List places = null;
-            if (Geocoder.isPresent()) {
-                Log.i(TAG, "服务存在" + Geocoder.isPresent());
-                Geocoder geocoder = new Geocoder(this, Locale.CHINA);
-
-                try {
-                    //Thread.sleep(2000);
-                    places = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 2);
-//                                Thread.sleep(2000);
-                    Log.i(TAG, "获取的地址" + places.toString());
-                    //Toast.makeText(this, "服务是否存在" + places.toString(), Toast.LENGTH_LONG).show();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                if (places != null && places.size() > 0) {
-                    // placename=((Address)places.get(0)).getLocality();
-                    // 以下的信息将会具体到某条街
-                    //其中getAddressLine(0)表示国家，getAddressLine(1)表示精确到某个区，getAddressLine(2)表示精确到具体的街+ System.getProperty("line.separator")
-                    StringBuilder stringBuilder = new StringBuilder();
+                /*
+                The Geocoder class requires a backend service that is not included in the
+                core android framework. The Geocoder query methods will return an empty list
+                if there no backend service in the platform. Use the isPresent() method to
+                determine whether a Geocoder implementation exists.
+                 */
+            Log.i(TAG, "服务存在" + Geocoder.isPresent());
+            Geocoder geocoder = new Geocoder(this, Locale.CHINA);
+            try {
+                //Thread.sleep(2000);
+                places = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 2);
+                Log.i(TAG, "获取的地址" + places.toString());
+                //Toast.makeText(this, "服务是否存在" + places.toString(), Toast.LENGTH_LONG).show();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            //places != null && places.size() > 0
+            if (places != null && places.size() > 0) {
+                Log.i(TAG, "谷歌服务提供地址");
+                //Toast.makeText(getApplicationContext(), "谷歌提供逆地理编码服务", Toast.LENGTH_LONG).show();
+                // placename=((Address)places.get(0)).getLocality();
+                // 以下的信息将会具体到某条街
+                //其中getAddressLine(0)表示国家，getAddressLine(1)表示精确到某个区，getAddressLine(2)表示精确到具体的街+ System.getProperty("line.separator")
+                StringBuilder stringBuilder = new StringBuilder();
                 /*
                 placename = ((Address) places.get(0)).getAddressLine(0) + " "
                         + ((Address) places.get(0)).getAddressLine(1) + " "
                         + ((Address) places.get(0)).getAddressLine(2);
                         */
-                    for (int i = 0; ((Address) places.get(0)).getAddressLine(i) != null; i++) {
-                        stringBuilder.append(((Address) places.get(0)).getAddressLine(i));
-                        stringBuilder.append(" ");
-                    }
-                    placename = String.valueOf(stringBuilder);
-                    myLocationText.setText(placename);
-
+                for (int i = 0; ((Address) places.get(0)).getAddressLine(i) != null; i++) {
+                    stringBuilder.append(((Address) places.get(0)).getAddressLine(i));
+                    stringBuilder.append(" ");
                 }
-            } else {
-                final String urlOri = "http://restapi.amap.com/v3/geocode/regeo?output=json&location=";
-                final String latlng = location.getLongitude()+","+location.getLatitude()+"&";
-                final String key = "key=e9399f74899ed9b1bba884bfe685cb24"+"&";
-                final String radius = "radius=200";
+                placename = String.valueOf(stringBuilder);
+                myLocationText.setText(placename);
 
-                Log.i(TAG,urlOri+latlng+key+radius);
+            } else if ((!latSub) && (!lngSub)) {
+                //Toast.makeText(getApplicationContext(), "执行向地图服务商请求语句"+lngSub.toString()+latSub.toString(), Toast.LENGTH_SHORT).show();
+                Log.i(TAG, latSub.toString() + lngSub.toString() + "执行向地图服务商请求语句");
+                final String urlOri = "http://restapi.amap.com/v3/geocode/regeo?output=json&location=";
+                //37.421998333  -122.0840000 location.getLongitude() + "," + location.getLatitude() + "&"
+                final String latlng = location.getLongitude() + "," + location.getLatitude() + "&";
+                //
+                final String key = "key=申请的key" + "&";
+                final String radius = "radius=200";
+                Log.i(TAG, "高德请求url：" + urlOri + latlng + key + radius);
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
                         BufferedReader br = null;
                         try {
-                            URL url = new URL(urlOri+latlng+key+radius);
+                            URL url = new URL(urlOri + latlng + key + radius);
                             HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
                             httpURLConnection.setRequestProperty("accept", "*/*");
                             httpURLConnection.setDoInput(true);
                             httpURLConnection.setDoOutput(true);
+                            Log.i(TAG, "向高德发送请求");
                             httpURLConnection.connect();
                             int stat = httpURLConnection.getResponseCode();
                             Log.i("Tag", "CODE:" + stat);
@@ -502,24 +541,139 @@ public class FullscreenActivity extends AppCompatActivity {
                                 br = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
                                 msg = br.readLine();
                                 JSONObject jsonObject = new JSONObject(msg);
-                                JSONObject jsonObjectAll = jsonObject.getJSONObject("regeocode");
-                                //省份
-                                JSONObject jsonObjectProvince = jsonObjectAll.getJSONObject("addressComponent");
-                                Log.i(TAG,jsonObjectProvince.getString("province"));
-                                String province = jsonObjectProvince.getString("province");
-                                //街道名
-                                JSONObject jsonObjectTownship = jsonObjectAll.getJSONObject("addressComponent");
-                                String township = jsonObjectTownship.getString("township");
-                                //删除省份和记街道
-                                String stringPlacename = jsonObjectAll.getString("formatted_address");
-                                stringPlacename = stringPlacename.replace(province,"");
-                                stringPlacename = stringPlacename.replace(township,"");
-                                Log.i(TAG,stringPlacename);
-                                placename = stringPlacename;
-                                //不允许在子线程中更新view
-                                handler.post(runnableUi);
+                                Log.i(TAG, "高德请求返回成功");
+                                if (jsonObject.has("regeocode") && !(jsonObject.getJSONObject("regeocode").getJSONObject("addressComponent").getString("province").equals("[]"))) {
+                                    Log.i(TAG, "存在regeocode");
+                                    Log.i(TAG, "高德地图服务提供地址");
+                                    JSONObject jsonObjectAll = jsonObject.getJSONObject("regeocode");
+                                    //省份
+                                    JSONObject jsonObjectProvince = jsonObjectAll.getJSONObject("addressComponent");
+                                    String province = jsonObjectProvince.getString("province");
+                                    Log.i(TAG, province);
+                                    //街道名
+                                    JSONObject jsonObjectTownship = jsonObjectAll.getJSONObject("addressComponent");
+                                    String township = jsonObjectTownship.getString("township");
+                                    //删除省份和街道
+                                    String stringPlacename = jsonObjectAll.getString("formatted_address");
+                                    stringPlacename = stringPlacename.replace(province, "");
+                                    stringPlacename = stringPlacename.replace(township, "");
+                                    Log.i(TAG, stringPlacename);
+                                    placename = stringPlacename;
+                                    //不允许在子线程中更新view
+                                    handler.post(runnableUi);
+                                } else {
+                                    Log.i(TAG, "不存在regeocode或者地址位置不完整");
+                                    Log.i(TAG, "百度地图服务提供地址");
+                                    final String urlOri2 = "http://api.map.baidu.com/geocoder/v2/?location=";
+                                    final String latlng2 = location.getLatitude() + "," + location.getLongitude() + "&output=json&";
+                                    //
+                                    final String key2 = "ak=";
+                                    Log.i(TAG, "百度请求url：" + urlOri2 + latlng2 + key2);
+                                    try {
+                                        url = new URL(urlOri2 + latlng2 + key2);
+                                        httpURLConnection = (HttpURLConnection) url.openConnection();
+                                        httpURLConnection.setRequestProperty("accept", "*/*");
+                                        httpURLConnection.setDoInput(true);
+                                        httpURLConnection.setDoOutput(true);
+                                        Log.i(TAG, "发送请求-百度API");
+                                        httpURLConnection.connect();
+                                        stat = httpURLConnection.getResponseCode();
+                                        Log.i("Tag", "CODE:" + stat);
+                                        if (stat == 200) {
+                                            Log.i(TAG, "显示位置-百度API");
+                                            br = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
+                                            msg = br.readLine();
+                                            jsonObject = new JSONObject(msg);
+                                            if (jsonObject.has("result") && !(jsonObject.getJSONObject("result").getString("formatted_address").equals("\"\""))) {
+                                                Log.i(TAG, "存在result");
+                                                JSONObject jsonObjectAll = jsonObject.getJSONObject("result");
+                                                //地址
+                                                String formatted_address = jsonObjectAll.getString("formatted_address");
+                                                Log.i(TAG, formatted_address);
+                                                placename = formatted_address;
+                                                //不允许在子线程中更新view
+                                                handler.post(runnableUi);
+                                            } else {
+                                                //Looper.prepare();
+                                                //Toast.makeText(getApplicationContext(), "地址API调用超额QAQ", Toast.LENGTH_SHORT).show();
+                                                //Looper.loop();
+                                                Log.i(TAG, "不存在result或者地址位置不完整");
+                                                Log.i(TAG, "高德地图JS服务提供地址");
+                                                String urlJS = String.format("https://restapi.amap.com/v3/geocode/regeo?key=&s=rsv3&language=undefined&location=%s,%s&radius=200&extensions=all&callback=jsonp_544393_&platform=JS&logversion=2.0&sdkversion=1.4.8",
+                                                        location.getLongitude(), location.getLatitude());
+                                                Log.i(TAG, "高德地图JS请求url：" + urlJS);
+                                                try {
+                                                    url = new URL(urlJS);
+                                                    httpURLConnection = (HttpURLConnection) url.openConnection();
+                                                    httpURLConnection.setRequestProperty("accept", "*/*");
+                                                    httpURLConnection.setDoInput(true);
+                                                    httpURLConnection.setDoOutput(true);
+                                                    Log.i(TAG, "发送请求-高德地图JS");
+                                                    httpURLConnection.connect();
+                                                    stat = httpURLConnection.getResponseCode();
+                                                    Log.i("Tag", "CODE:" + stat);
+                                                    if (stat == 200) {
+                                                        Log.i(TAG, "显示位置-高德地图js");
+                                                        br = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
+                                                        msg = br.readLine();
+                                                        jsonObject = new JSONObject(msg);
+                                                        if (jsonObject.has("regeocode") && !(jsonObject.getJSONObject("regeocode").getString("formatted_address").equals("[]"))) {
+                                                            Log.i(TAG, "js存在regeocode");
+                                                            JSONObject jsonObjectAll = jsonObject.getJSONObject("regeocode");
+                                                            //地址
+                                                            String formatted_address = jsonObjectAll.getString("formatted_address");
+                                                            Log.i(TAG, formatted_address);
+                                                            placename = formatted_address;
+                                                            //不允许在子线程中更新view
+                                                            handler.post(runnableUi);
+                                                        } else {
+                                                            Log.i(TAG, "不存在regeocode或者地址信息不完整-js结束");
+                                                            //Looper.prepare();
+                                                            //Toast.makeText(getApplicationContext(), "地址API调用超额QAQ", Toast.LENGTH_SHORT).show();
+                                                            //Looper.loop();
+                                                        }
+                                                    }
+
+                                                } catch (MalformedURLException e) {
+                                                    e.printStackTrace();
+                                                } catch (IOException e) {
+                                                    e.printStackTrace();
+                                                } catch (JSONException e) {
+                                                    e.printStackTrace();
+                                                } finally {
+                                                    if (br != null) {
+                                                        try {
+                                                            br.close();
+                                                        } catch (IOException e) {
+                                                            e.printStackTrace();
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            Log.i(TAG, "不存在result或者地址信息不完整-百度地图结束");
+                                        }
+
+                                    } catch (MalformedURLException e) {
+                                        e.printStackTrace();
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    } finally {
+                                        if (br != null) {
+                                            try {
+                                                br.close();
+                                            } catch (IOException e) {
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                    }
+                                }
+
                             } else {
                                 msg = "请求失败";
+                                Log.i(TAG, "高德地图结束。所有配额用完！！！");
                             }
                         } catch (MalformedURLException e) {
                             e.printStackTrace();
@@ -538,7 +692,9 @@ public class FullscreenActivity extends AppCompatActivity {
                         }
                     }
                 }).start();
-
+            } else {
+                Log.i(TAG, latSub.toString() + lngSub.toString() + "不执行向地图服务商语句");
+                //Toast.makeText(getApplicationContext(), "地址转换失败", Toast.LENGTH_LONG).show();
             }
             //http://www.eoeandroid.com/thread-56691-1-1.html
             if (location.getLongitude() > 0) {
@@ -558,7 +714,7 @@ public class FullscreenActivity extends AppCompatActivity {
             double altitude = location.getAltitude();
             textViewAltitude.setText((int) altitude + "米");
             double accuracy = location.getAccuracy();
-            textViewOtherInfo.setText("海拔精度:" +  (int)accuracy + "米 | "
+            textViewOtherInfo.setText("海拔精度:" + (int) accuracy + "米 | "
                     + "当前速度:" + ((int) ((location.getSpeed() * 100))) / 100.0 + "m/s | " + "卫星数量:" +
                     String.valueOf(String.valueOf(countSat) + "颗"));
 
@@ -618,99 +774,5 @@ public class FullscreenActivity extends AppCompatActivity {
         criteria.setPowerRequirement(Criteria.POWER_LOW);//设置对电源的需求
         return criteria;
     }
-//    //提示用户开启权限请求的弹出框
-//    private  void showDialogTipUserRequestPermission(){
-//        new AlertDialog.Builder(this).setTitle("位置权限不可用！").setMessage("啊...由于该应用需要获取位置权限才能正常工作。请进行操作").
-//                setPositiveButton("开启",new DialogInterface.OnClickListener(){
-//            @Override
-//            public void onClick(DialogInterface dialog, int which) {
-//                startRequestPermission();
-//            }
-//        }).setNegativeButton("不开！",new  DialogInterface.OnClickListener(){
-//            @Override
-//            public void onClick(DialogInterface dialog, int which) {
-//                Toast.makeText(FullscreenActivity.this, "鹅鹅鹅鹅鹅鹅，酱紫呀", Toast.LENGTH_SHORT).show();
-//                finish();
-//            }
-//        }).setCancelable(false).show();
-//    }
-//    //开始提交权限请求
-//    private void startRequestPermission(){
-//        ActivityCompat.requestPermissions(this,permissions,REQUEST_CODE_ASK_PERMISSIONS);
-//    }
-//    //用户权限  申请 的回调方法
-//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,@NonNull
-//                                           int[] grantResults){
-//        super.onRequestPermissionsResult(requestCode,permissions,grantResults);
-//        if(requestCode == REQUEST_CODE_ASK_PERMISSIONS){
-//            if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M){
-//                if(grantResults[0]!=PackageManager.PERMISSION_GRANTED){
-//                    //判断用户是否点击了不再提醒。（检测该权限师傅还可以申请）
-//                    boolean b = shouldShowRequestPermissionRationale(permissions[0]);
-//                    if(!b){
-//                        //用户还是想用我的APP的
-//                        //提示用户去应用设置界面手动开启权限
-//                        showDialogTipUserRequestPermission();
-//                    }else{
-//                        finish();
-//                    }
-//                }
-//                else{
-//                    Toast.makeText(this, "恭喜权限获取成功，祝体验愉快", Toast.LENGTH_SHORT).show();
-//                }
-//            }
-//        }
-//    }
-//    //提示用户去应用设置界面手动开启权限
-//    private void showDialogTipUserGoToAppSetting(){
-//        perDialog  = new AlertDialog.Builder(this).setTitle("oops!!!位置服务不可用！").
-//                setMessage("请在“应用设置-权限”中允许“经纬海拔”使用位置权限").
-//                setPositiveButton("现在去开",new DialogInterface.OnClickListener(){
-//            @Override
-//            public void onClick(DialogInterface dialog, int which) {
-//                //跳转到应用设置界面
-//                goToAppSetting();
-//            }
-//        }).setNegativeButton("懒得开了", new DialogInterface.OnClickListener(){
-//            @Override
-//            public void onClick(DialogInterface dialog, int which) {
-//                finish();
-//            }
-//        }).setCancelable(false).show();
-//    }
-//    // 跳转到当前应用的设置界面
-//    private void goToAppSetting() {
-//        Intent intent = new Intent();
-//
-//        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-//        Uri uri = Uri.fromParts("package", getPackageName(), null);
-//        intent.setData(uri);
-//
-//        startActivityForResult(intent, REQUEST_CODE_ASK_PERMISSIONS);
-//    }
-
-//    //
-//    @Override
-//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-//        super.onActivityResult(requestCode, resultCode, data);
-//        if (requestCode == REQUEST_CODE_ASK_PERMISSIONS) {
-//
-//            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//                // 检查该权限是否已经获取
-//                int i = ContextCompat.checkSelfPermission(this, permissions[0]);
-//                // 权限是否已经 授权 GRANTED---授权  DINIED---拒绝
-//                if (i != PackageManager.PERMISSION_GRANTED) {
-//                    // 提示用户应该去应用设置界面手动开启权限
-//                    showDialogTipUserGoToAppSetting();
-//                } else {
-//                    if (perDialog != null && perDialog.isShowing()) {
-//                        perDialog.dismiss();
-//                    }
-//                    Toast.makeText(this, "权限获取成功", Toast.LENGTH_SHORT).show();
-//                }
-//            }
-//        }
-//    }
-
 
 }
